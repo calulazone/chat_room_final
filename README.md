@@ -6,6 +6,7 @@
   - Rooms par défaut : Lobby, Support (pour admin), Room 1, Room 2, Room 3
   - Rejoindre/quitter des rooms
   - Cooldown des messages
+  - Changer son pseudo
 - **Messagerie en temps réel** : Envoi et réception de messages instantanés
 - **Indicateur de frappe** : Voir quand un ou plusieurs utilisateurs est/sont en train d'écrire
 
