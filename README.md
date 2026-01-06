@@ -1,4 +1,4 @@
-# Chat Room WebSocket
+# Chat Room WebSocket - GIRARD Lucas - ESGI IW M2
 
 ## Fonctionnalités
 
