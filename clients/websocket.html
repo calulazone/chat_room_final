@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat en temps réel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="theme.js" defer></script>
+</head>
+<body class="theme-light">
+
+<nav>
+  <a href="index.html">Index</a>
+  <button id="theme-toggle" onclick="toggleTheme()"></button>
+</nav>
+
+<main class="chat-page">
+  <div class="chat-container card">
+
+    <div id="login-container">
+      <h2 id="login-title">Connexion</h2>
+      <form id="user-form">
+        <label for="username">Nom d'utilisateur :</label>
+        <input id="username" name="username" type="text" placeholder="Entrez votre nom" required>
+
+        <div id="password-container" style="display:none;">
+          <label for="password">Mot de passe :</label>
+          <input id="password" type="password" placeholder="Mot de passe">
+        </div>
+
+        <button type="submit" id="login-button">Se connecter</button>
+      </form>
+    </div>
+
+    <div id="chat" class="chat-area" style="display:none;">
+      <div class="chat-header">
+        <h2 id="current-room"></h2>
+        <div class="user-info">
+          <span id="connected-user"></span>
+          <button id="change-username">Changer de pseudo</button>
+        </div>
+      </div>
+
+      <div id="messages"></div>
+      <div id="typing-indicator" style="font-style: italic; opacity:0.7"></div>
+
+      <form id="message-form" autocomplete="off">
+        <input id="message-input" type="text" placeholder="Écrivez un message..." required>
+        <button id="submit-button" type="submit">Envoyer</button>
+        <span id="cooldown-text" style="margin-left:10px;font-size:0.9em"></span>
+      </form>
+    </div>
+
+  </div>
+
+  <div class="sidebar card" id="sidebar" style="display:none;">
+
+    <div id="admin-room-container" style="display:none;">
+      <h3>Room Admin</h3>
+      <div class="room" id="admin-support" data-room-id="support" data-room-name="Support">Support</div>
+    </div>
+
+    <h3>Rooms publiques</h3>
+    <div id="public-rooms">
+      <div class="room" data-room-id="lobby" data-room-name="Lobby">Lobby</div>
+    </div>
+
+    <h3>Rooms privées</h3>
+    <div id="rooms-list">
+      <div class="room" data-room-id="private1" data-room-name="Room 1">Room 1</div>
+      <div class="room" data-room-id="private2" data-room-name="Room 2">Room 2</div>
+      <div class="room" data-room-id="private3" data-room-name="Room 3">Room 3</div>
+    </div>
+  </div>
+</main>
+
+<script>
+let socket = null;
+let username = '';
+let currentRoom = '';
+let isAdminMode = false;
+
+const loginContainer = document.getElementById('login-container');
+const userForm = document.getElementById('user-form');
+const chat = document.getElementById('chat');
+const messages = document.getElementById('messages');
+const currentRoomEl = document.getElementById('current-room');
+const connectedUserEl = document.getElementById('connected-user');
+const roomsList = document.getElementById('rooms-list');
+const changeBtn = document.getElementById('change-username');
+const submitButton = document.getElementById('submit-button');
+const cooldownText = document.getElementById('cooldown-text');
+const messageInput = document.getElementById('message-input');
+const publicRooms = document.getElementById('public-rooms');
+const passwordContainer = document.getElementById('password-container');
+const passwordInput = document.getElementById('password');
+const loginTitle = document.getElementById('login-title');
+const sidebar = document.getElementById('sidebar');
+const adminRoomContainer = document.getElementById('admin-room-container');
+const adminSupportRoom = document.getElementById('admin-support');
+
+const cooldown = 10;
+let remainingTime = 0;
+let cooldownInterval = null;
+const typingIndicator = document.getElementById('typing-indicator');
+const typingUsers = new Set();
+let typingTimeout = null;
+
+// Détecte si user est admin via query param
+const urlParams = new URLSearchParams(window.location.search);
+isAdminMode = urlParams.get('admin') === '1';
+if (isAdminMode) {
+  loginTitle.textContent = 'Connexion Admin';
+  passwordContainer.style.display = 'block';
+}
+
+function getTime() {
+  const now = new Date();
+  return now.getHours().toString().padStart(2,'0') + ':' +
+         now.getMinutes().toString().padStart(2,'0');
+}
+
+// Requête HTTP pour login avant WebSocket 
+userForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  username = document.getElementById('username').value.trim();
+  if (!username) return;
+
+  let password = null;
+  const role = isAdminMode ? 'admin' : 'user';
+  if (isAdminMode) password = passwordInput.value;
+
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ username, role, password })
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(data.message);
+      return;
+    }
+
+    sidebar.style.display = 'block';
+    chat.style.display = 'flex';
+    loginContainer.style.display = 'none';
+
+    if (isAdminMode) {
+      adminRoomContainer.style.display = 'block';
+      currentRoom = 'Support';
+    } else {
+      currentRoom = 'Lobby';
+    }
+
+    currentRoomEl.textContent = currentRoom;
+    connectedUserEl.textContent = `Connecté en tant que ${username}${isAdminMode ? ' (Admin)' : ''}`;
+
+    socket = io();
+    socket.emit('setUsername', username);
+    const defaultRoomId = isAdminMode ? 'support' : 'lobby';
+    socket.emit('joinRoom', defaultRoomId);
+
+    // Événements Socket
+    socket.on('chatMessage', d => {
+      const div = document.createElement('div');
+      div.textContent = `${d.username} (${getTime()}): ${d.message}`;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    });
+
+    socket.on('systemMessage', msg => {
+      const div = document.createElement('div');
+      div.textContent = `(${getTime()}) ${msg}`;
+      div.style.fontStyle = 'italic';
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    });
+
+    socket.on('userTyping', name => {
+      if (name === username) return;
+      typingUsers.add(name);
+      updateTypingIndicator();
+    });
+
+    socket.on('userStopTyping', name => {
+      typingUsers.delete(name);
+      updateTypingIndicator();
+    });
+
+  } catch(err) {
+    console.error(err);
+    alert('Erreur de connexion au serveur');
+  }
+});
+
+// Envoi d'un message
+document.getElementById('message-form').addEventListener('submit', e => {
+  e.preventDefault();
+  if (remainingTime > 0) return;
+  const msg = messageInput.value.trim();
+  if (!msg) return;
+
+  socket.emit('chatMessage', msg);
+  messageInput.value = '';
+  startCooldown();
+
+  socket.emit('stopTyping');
+  typingUsers.clear();
+  updateTypingIndicator();
+});
+
+function startCooldown() {
+  remainingTime = cooldown;
+  submitButton.disabled = true;
+  updateCooldownText();
+  cooldownInterval = setInterval(() => {
+    remainingTime--;
+    updateCooldownText();
+    if (remainingTime <= 0) {
+      clearInterval(cooldownInterval);
+      submitButton.disabled = false;
+      cooldownText.textContent = '';
+    }
+  }, 1000);
+}
+
+function updateCooldownText() {
+  cooldownText.textContent = `Attendez ${remainingTime}s`;
+}
+
+// Join une room
+function joinRoom(roomId, roomName, roomEl) {
+  if (roomName === currentRoom) return;
+  socket.emit('joinRoom', roomId);
+  currentRoom = roomName;
+  currentRoomEl.textContent = currentRoom;
+  messages.innerHTML = '';
+  typingUsers.clear();
+  updateTypingIndicator();
+
+  document.querySelectorAll('.room').forEach(r => r.classList.remove('active-room'));
+  roomEl.classList.add('active-room');
+}
+
+//  Rooms publiques et privées
+publicRooms.querySelectorAll('.room').forEach(r => {
+  r.addEventListener('click', () => joinRoom(r.dataset.roomId, r.dataset.roomName, r));
+});
+roomsList.querySelectorAll('.room').forEach(r => {
+  r.addEventListener('click', () => joinRoom(r.dataset.roomId, r.dataset.roomName, r));
+});
+
+// Room Admin
+adminSupportRoom.addEventListener('click', () => joinRoom('support', 'Support', adminSupportRoom));
+
+// Changement de pseudo
+changeBtn.addEventListener('click', () => {
+  const newName = prompt("Entrez votre nouveau pseudo :", username);
+  if (!newName) return;
+  username = newName.trim();
+  socket.emit('setUsername', username);
+  connectedUserEl.textContent = `Connecté en tant que ${username}${isAdminMode ? ' (Admin)' : ''}`;
+});
+
+// Typing indicator 
+messageInput.addEventListener('keydown', () => {
+  socket.emit('typing');
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => { socket.emit('stopTyping'); }, 1500);
+});
+
+function updateTypingIndicator() {
+  const users = Array.from(typingUsers);
+  typingIndicator.textContent = users.length === 0
+    ? ''
+    : users.length === 1
+      ? `${users[0]} est en train d'écrire...`
+      : 'Plusieurs personnes écrivent...';
+}
+</script>
+</body>
+</html>

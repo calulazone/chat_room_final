@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8">
+    <title>Chat Room</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Projet final Chat Room" />
+    <meta name="author" content="GIRARD Lucas" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <script src="theme.js" defer></script>
+  </head>
+
+  <body>
+
+    <nav>
+      <a href="index.html">Index</a>
+      
+      <button id="theme-toggle" onclick="toggleTheme()"></button>
+    </nav>
+
+    <main>
+      <h1>Portail de connexion</h1>
+      <p>Choisissez un mode de connexion.</p>
+
+      <div class="grid">
+        <!-- Carte User -->
+        <a class="card" href="websocket.html?admin=0">
+          <h2>Utilisateur</h2>
+          <p>Connexion standard, accès aux rooms publiques et privées.</p>
+        </a>
+
+        <!-- Carte Admin -->
+        <a class="card" href="websocket.html?admin=1">
+          <h2>Admin</h2>
+          <p>Connexion admin, nécessite un mot de passe, droits supplémentaires.</p>
+        </a>
+      </div>
+    </main>
+
+
+    </body>
+</html>

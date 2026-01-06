@@ -1,0 +1,225 @@
+/* ---------- Thèmes ---------- */
+.theme-light {
+  --bg: #f9fafb;
+  --card-bg: #ffffff;
+  --border: #e5e7eb;
+  --text: #111827;
+  --text-light: #6b7280;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --nav-bg: #ffffff;
+  --nav-border: #e5e7eb;
+  --nav-link: #111827;
+}
+
+.theme-dark {
+  --bg: #0f172a;
+  --card-bg: #1e293b;
+  --border: #334155;
+  --text: #f1f5f9;
+  --text-light: #94a3b8;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --nav-bg: #1e293b;
+  --nav-border: #334155;
+  --nav-link: #f1f5f9;
+}
+
+/* ---------- Base ---------- */
+body {
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  margin: 0;
+  padding: 0;
+  color: var(--text);
+}
+
+/* ---------- Navigation ---------- */
+nav {
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--nav-border);
+  padding: 14px 30px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+nav a {
+  text-decoration: none;
+  color: var(--nav-link);
+  font-size: 15px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background .15s;
+}
+
+nav a:hover { background: var(--border); }
+
+#theme-toggle {
+  margin-left: auto;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#theme-toggle:hover { background: var(--border); }
+
+/* ---------- Cartes (Global) ---------- */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 22px;
+  color: var(--text);
+  transition: all .15s ease;
+}
+
+.card h2 { margin:0 0 10px; color: var(--primary); }
+
+/* ---------- Page index (cartes User/Admin) ---------- */
+.grid {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 30px;
+}
+
+.grid .card {
+  flex: 1 1 200px;
+  max-width: 250px;
+  padding: 25px;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.grid .card h2 {
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+
+.grid .card p {
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+/* ---------- Chat Layout ---------- */
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.chat-header h2 {
+  margin: 0;
+}
+
+.chat-header button {
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+}
+
+.chat-header button:hover {
+  background: var(--border);
+}
+
+.chat-header .user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-header .user-info span {
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+.chat-page {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+.chat-container {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+}
+
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: var(--card-bg);
+}
+
+#message-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+#message-input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+}
+
+.sidebar {
+  flex: 1;
+  padding: 10px;
+}
+
+.room {
+  cursor: pointer;
+  padding: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.room:hover { background: var(--bg); }
+
+.active-room { font-weight: bold; color: var(--primary); }
+
+/* ---------- Boutons ---------- */
+button {
+  background: var(--primary);
+  color: white;
+  padding: 8px 14px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover { background: var(--primary-hover); }
