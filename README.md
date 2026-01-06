@@ -22,12 +22,18 @@
    - Copiez le fichier `app/.env.example` vers `app/.env`
    - Modifiez les valeurs dans `app/.env`
 
-3. Lancez le projet :
+3. Installez les modules :
    ```bash
-   docker-compose up
+   cd app
+   npm i
    ```
 
-4. Accédez à `http://localhost:3000`
+4. Lancez le projet :
+   ```bash
+   docker compose up
+   ```
+
+5. Accédez à `http://localhost:3000`
 
 Notes : C'est un peu long entre le docker et l'accès, je ne sais pas pourquoi
 
