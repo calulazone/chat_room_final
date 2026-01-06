@@ -1,55 +1,41 @@
-# web-temps-reel
+# Chat Room WebSocket
 
-## Getting started
+## Fonctionnalités
 
-```
-git clone https://gitlab.com/esgi4255746/web-temps-reel.git
-cd web-temps-reel
-```
-le depot constient une installation de base nestJS
-![alt dossier projet](assets/archi-dossier.png)
+- **Gestion des rooms** :
+  - Rooms par défaut : Lobby, Support (pour admin), Room 1, Room 2, Room 3
+  - Rejoindre/quitter des rooms
+  - Cooldown des messages
+- **Messagerie en temps réel** : Envoi et réception de messages instantanés
+- **Indicateur de frappe** : Voir quand un ou plusieurs utilisateurs est/sont en train d'écrire
 
-```
-npm i
-docker compose up --build
-```
-Vous devez obtenir un terminal en watch mode :
-![alt log de départ](assets/log-nest-started.png)
-l'application est disponible : http://localhost:3000/
+## Installation
 
-## lancer le projet  
+1. Clonez le repository :
+   ```bash
+   git clone https://github.com/calulazone/chat_room_final
+   cd web-temps-reel-projet
+   ```
 
-si vous n'avez pas encore nest :
-```
-npm install -g @nestjs/cli
-```
+2. Configurez les variables d'environnement :
+   - Copiez le fichier `app/.env.example` vers `app/.env`
+   - Modifiez les valeurs dans `app/.env`
 
-### branche polling
-```
-git checkout feat/polling
-docker compose up --build -d
-docker logs -f realtime_app
-```
+3. Lancez le projet :
+   ```bash
+   docker-compose up
+   ```
 
-### branche long polling
-```
-git checkout feat/long-polling
-```
-Pour tester les mises à jour :
-http://localhost:3000/increment (depuis un autre onglet)
+4. Accédez à `http://localhost:3000`
 
-### branche Server Side Events
-```
-git checkout feat/sse
-```
+Notes : C'est un peu long entre le docker et l'accès, je ne sais pas pourquoi
 
+## Utilisation
 
-### branche WebSocket
-```
-git checkout feat/websocket
-```
-Installer les dépendances :  
-```
-npm install @nestjs/websockets @nestjs/platform-socket.io
-npm install ioredis
-```
+1. Connectez-vous avec un des comptes :
+   - **Admin** : n'importe quel username + password défini dans `.env`
+   - **User** : n'importe quel username + 0 password
+
+2. Rejoignez une room en cliquant dessus dans la liste
+
+3. Envoyez des messages dans le chat
